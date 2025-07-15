@@ -1,13 +1,13 @@
 ## Usage
 
-- `--gtr_dir`: Path to the folder containing ground-truth **normal-dose** PET images in `.npz` format.  
+- `--gtr_dir`: Path to the folder containing ground-truth normal-dose PET images in `.npz` format.  
   Each subject should have a file named `<subject_id>.npz`.  
   *Modify the file loading logic if your ground truth structure differs.*
 
-- `--gen_dir`: Path to the folder containing **generated denoised results**.  
+- `--gen_dir`: Path to the folder containing generated denoised results.  
   Each subject should have a subfolder under this directory, and a `.npz` file within that contains the denoised PET image.
 
-- `--matfile_dir`: Path to the folder containing **original PET files without preprocessing** for each subject.  
+- `--matfile_dir`: Path to the folder containing original PET files without preprocessing for each subject.  
   These are used to extract the maximum SUV value for PSNR calculation.  
   *Adapt the file loading code as needed based on your structure.*
 
