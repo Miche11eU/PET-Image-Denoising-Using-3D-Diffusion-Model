@@ -2,6 +2,7 @@ import os
 import argparse
 import numpy as np
 import scipy.io as scio
+import math
 from skimage.metrics import structural_similarity as ssim
 
 def getPSNR(X, Y, max):
