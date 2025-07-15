@@ -74,7 +74,7 @@ Download the pre-trained model files from this [link](https://www.dropbox.com/sc
 The model was trained using PET images with a voxel size of **1.65 × 1.65 × 1.65 mm³**, so **all testing data should be resampled to this voxel size before inference**.  
 Also, ensure that the low-dose PET input is converted to **SUV units** prior to being passed into the model.
 
-By default, our script assumes the test data volume shape is [192, 288, 520]. The volume is split along the axial axis into 6 overlapping patches** of size [192, 288, 96], each overlapping with its neighbor by 10 pixels, which helps to generate smoother transitions at patch boundaries.
+By default, our script assumes the test data volume shape is [192, 288, 520]. The volume is split along the axial axis into 6 overlapping patches of size [192, 288, 96], each overlapping with its neighbor by 10 pixels, which helps to generate smoother transitions at patch boundaries.
 
 
 ### Running the Denoising Script
