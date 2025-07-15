@@ -78,14 +78,14 @@ def main():
     arr = arr[: args.num_samples] 
     arr = arr.reshape((arr.shape[0],arr.shape[2],arr.shape[3],arr.shape[4])) 
 
-    # Reassemble the patches into a single volume of shape [192, 288, 576] before merging overlaps
-    arr_result = np.zeros((192,288,576))     
+    # Reassemble 7 patches back to a volume with shape [192, 304, 672] before overlap processing
+    arr_result = np.zeros((192,304,672))     
     index = 0
-    for i in range(6):
+    for i in range(7):
         arr_result[:, :, i*96:(i+1)*96] = arr[index,:,:,:]
         index += 1
-
-    # Final volume is passed to a function that merges overlapping regions and restores original [192, 288, 520] shape
+    
+    # Process overlaps and restore to original dimensions [192, 304, 612]
     final_result = reverse_2_original_dimension(arr_result)
 
     if dist.get_rank() == 0:
@@ -103,13 +103,11 @@ def load_data_for_worker(base_samples, batch_size, class_cond):
         obj = np.load(f)
         low_pet = obj["arr_0"][0] 
 
-        # Divide the 3D PET volume of shape [192, 288, 520] into 6 overlapping patches along the axial axis.
-        # Each patch has shape [192, 288, 96], with 10-pixel overlap between adjacent patches.
-        # The final patch includes 16 pixels of overlap to cover the volume,
-        # but only 10 of those overlapping pixels are used in the final reconstruction.
-        image_arr = np.zeros((6,192,288,96))
+        # Divide [192, 304, 612] into 7 overlapping patches of size [192, 304, 96].
+        # Each patch overlaps with the next by 10 pixels.
+        image_arr = np.zeros((7,192,304,96))
         index = 0
-        for i in (0, 86, 172, 258, 344, 424):
+        for i in (0, 86, 172, 258, 344, 430, 516):
             image_arr[index,:,:,:] = low_pet[:, :, i:i+96]
             index += 1
     
@@ -140,32 +138,26 @@ def load_data_for_worker(base_samples, batch_size, class_cond):
                 buffer, label_buffer = [], []
 
 
-def reverse_2_original_dimension(quadra_3D_576):
-    # This function merges the 6 overlapping patches along the axial dimension to reconstruct
-    # the original [192, 288, 520] PET volume. Overlapping areas are blended using weighted average.
-    quadra_3D_520 = np.zeros((192, 288, 520))
-    index_a = [0, 96, 182, 268, 354, 440] # Start indices for final patch central parts placements
-    index_b = [86, 172, 258, 344, 430] # Start indices of 10-pixel overlaps
-
+def reverse_2_original_dimension(quadra_3D_672):
+    # Merge 7 overlapping patches to reconstruct original volume [192, 304, 612].
+    # Weighted average blending is used in overlapping areas to ensure smooth transitions.
+    quadra_3D_612 = np.zeros((192, 304, 612))
+    index_a = [0, 96, 182, 268, 354, 440, 526] # Start indices for final patch central parts placements
+    index_b = [86, 172, 258, 344, 430, 516] # Start indices of 10-pixel overlaps
+    
     # First non-overlapping segment
-    quadra_3D_520[:,:, 0:86] = quadra_3D_576[:,:,0:86]
-    for i in range(0,6):
-        if i>0 and i < 5:
+    quadra_3D_612[:,:, 0:86] = quadra_3D_672[:,:,0:86]
+    for i in range(0,7):
+        if i > 0:
             # Place the central non-overlapping parts of each patch
-            quadra_3D_520[:,:, index_a[i]:index_a[i]+76] = quadra_3D_576[:,:,96*i+10:96*i+86]
-        elif i==5:
-            # Last segment
-            quadra_3D_520[:,:, index_a[i]:] = quadra_3D_576[:,:,496:]
+            quadra_3D_612[:,:, index_a[i]:index_a[i]+76] = quadra_3D_672[:,:,96*i+10:96*i+86]
 
         # Blend 10-pixel overlapping regions between adjacent patches using weighted averaging
-        if i < 4:
+        if i <= 5:
             for j in range(0,10):
-                quadra_3D_520[:,:, index_b[i]:index_b[i]+10] = quadra_3D_576[:,:, 96*i+86:96*(i+1)]*(1-j/10) + quadra_3D_576[:,:, 96*(i+1):96*(i+1)+10]*(j/10)
-        elif i==4:
-            for j in range(0,10):
-                quadra_3D_520[:,:, index_b[i]:index_b[i]+10] = quadra_3D_576[:,:, 96*i+86:96*(i+1)]*(1-j/10) + quadra_3D_576[:,:, 96*(i+1)+6:96*(i+1)+16]*j/10
+                quadra_3D_612[:,:, index_b[i]:index_b[i]+10] = quadra_3D_672[:,:, 96*i+86:96*(i+1)]*(1-j/10) + quadra_3D_672[:,:, 96*(i+1):96*(i+1)+10]*(j/10)
 
-    return quadra_3D_520
+    return quadra_3D_612
 
 
 def create_argparser():

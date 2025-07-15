@@ -25,6 +25,13 @@
   <span class="author-block"><sup>6</sup>Department of Nuclear Medicine, University of Bern</span>
 </div>
 
+> 📢 **Updates**  
+> - 📈 Evaluation script `evaluation/get_ssim_psnr.py` added to compute **SSIM** and **PSNR**
+> - ✅ Added support for overlapping patch-based inference in `scripts/test.py`  
+> - 💡 Included detailed comments and flexible slicing logic for customizing your own inference pipeline  
+> - 📏 Reminder: Input PET volumes should be resampled to **1.65×1.65×1.65 mm³** voxel size and converted to **SUV units**
+
+
 ## Purpose
 
 Whole-body PET imaging plays an essential role in cancer diagnosis and treatment but suffers from low image quality. Traditional deep learning-based denoising methods work well for a specific acquisition but are less effective in handling diverse PET protocols. In this study, we proposed and validated a 3D Denoising Diffusion Probabilistic Model (3D DDPM) as a robust and universal solution for whole-body PET image denoising. 
@@ -64,23 +71,40 @@ Download the pre-trained model files from this [link](https://www.dropbox.com/sc
 
 ### Data Preparation
 
-Before running the denoising script, modify the `load_data_for_worker` function in `./scripts/test.py` to align with your data format and dimensions. This function is responsible for loading your low-dose PET data into the model.
+The model was trained using PET images with a voxel size of **1.65 × 1.65 × 1.65 mm³**, so **all testing data should be resampled to this voxel size before inference**.  
+Also, ensure that the low-dose PET input is converted to **SUV units** prior to being passed into the model.
+
+By default, our script assumes the test data volume shape is [192, 288, 520]. The volume is split along the axial axis into 6 overlapping patches** of size [192, 288, 96], each overlapping with its neighbor by 10 pixels, which helps to generate smoother transitions at patch boundaries.
+
 
 ### Running the Denoising Script
+Before running the denoising script, modify the `load_data_for_worker` function and `reverse_2_original_dimension` function in `./scripts/test.py` to align with your data format and dimensions. We provide the script `./scripts/test.py` for testing with overlapping patch inference built-in. A shell launcher (`test_DDPM_3d_mpi.sh`) is available to assist multi-GPU inference.
 
-We provide a shell script `test_DDPM_3d_mpi.sh` to facilitate the testing process.
-
-#### Usage
+#### Script Usage
 
 - `--base_samples`: Path to the `.npz` files containing your low-dose PET images.
-- `--num_samples`: Total number of samples you wish to process.
+- `--num_samples`: Total number of samples to process (typically equals number of patches).
 - `-n`: Number of GPUs to utilize for parallel processing.
-- `--save_dir`: Path to the directory where you want to save the denoised images.
+- `--save_dir`: Output directory to store the denoised image results.
+
+### Customizing for Different Input Shapes
+
+For PET volumes of different dimensions (e.g., `[192, 304, 612]`), we provide an example script: `scripts/test_192_304_612.py`, which demonstrates how to:
+
+- Divide the input into different overlapping patches
+- Adjust the slicing logic and reconstruction scheme accordingly
+
+Users can refer to this script and modify it to match their own PET volume dimensions and overlapping strategies. You are encouraged to use larger overlaps (e.g., >10 pixels) if smoother patch merging is desired.
+
+### Notes
+
+- The inference scripts handle patch stitching automatically and convert back to the original input shape after denoising.
+- You may modify the overlap size, number of patches, or patch locations depending on your GPU memory and data characteristics.
 
 
 ## Evaluation
 
-To quantitatively assess the denoising performance, we provide an evaluation script located at `./evaluation/get_ssim_psnr.py`. This script computes **SSIM** and **PSNR** between the denoised PET images and the ground-truth normal-dose PET.
+To quantitatively assess the denoising performance, we provide an evaluation script located at `./evaluation/get_ssim_psnr.py`. This script computes SSIM and PSNR between the denoised PET images and the ground-truth normal-dose PET.
 
 
 ## License
