@@ -77,6 +77,12 @@ We provide a shell script `test_DDPM_3d_mpi.sh` to facilitate the testing proces
 - `-n`: Number of GPUs to utilize for parallel processing.
 - `--save_dir`: Path to the directory where you want to save the denoised images.
 
+
+## Evaluation
+
+To quantitatively assess the denoising performance, we provide an evaluation script located at `./evaluation/get_ssim_psnr.py`. This script computes **SSIM** and **PSNR** between the denoised PET images and the ground-truth normal-dose PET.
+
+
 ## License
 
 - The **code** in this repository is licensed under the **MIT License**.
