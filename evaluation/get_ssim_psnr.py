@@ -65,7 +65,7 @@ def SSIMs_PSNRs(gtr_dir, gen_dir, matfile_dir):
             # Load corresponding ground truth and rescale by 16
             gtr = np.load(os.path.join(gtr_dir, i + '.npz'))['arr_0'][1] * 16
 
-            # Load original 3D PET file to get the maximum SUV value
+            # Load original 3D normal-dose PET file to get the maximum SUV value
             matfile_data = scio.loadmat(os.path.join(matfile_dir, i + ".mat"))
             pet_SUV = matfile_data['suv']
             max_value = pet_SUV.max()
