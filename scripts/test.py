@@ -160,10 +160,10 @@ def reverse_2_original_dimension(quadra_3D_576):
         # Blend 10-pixel overlapping regions between adjacent patches using weighted averaging
         if i < 4:
             for j in range(0,10):
-                quadra_3D_520[:,:, index_b[i]:index_b[i]+10] = quadra_3D_576[:,:, 96*i+86:96*(i+1)]*(1-j/10) + quadra_3D_576[:,:, 96*(i+1):96*(i+1)+10]*(j/10)
+                quadra_3D_520[:,:, index_b[i]+j:index_b[i]+j+1] = quadra_3D_576[:,:, 96*i+86+j:96*i+86+j+1]*(1-j/9) + quadra_3D_576[:,:, 96*(i+1)+j:96*(i+1)+j+1]*(j/9)
         elif i==4:
             for j in range(0,10):
-                quadra_3D_520[:,:, index_b[i]:index_b[i]+10] = quadra_3D_576[:,:, 96*i+86:96*(i+1)]*(1-j/10) + quadra_3D_576[:,:, 96*(i+1)+6:96*(i+1)+16]*j/10
+                quadra_3D_520[:,:, index_b[i]+j:index_b[i]+j+1] = quadra_3D_576[:,:, 96*i+86+j:96*i+86+j+1]*(1-j/9) + quadra_3D_576[:,:, 96*(i+1)+j+6:96*(i+1)+j+1+6]*(j/9)
 
     return quadra_3D_520
 
