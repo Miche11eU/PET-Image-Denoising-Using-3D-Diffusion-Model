@@ -26,6 +26,7 @@
 </div>
 
 > 📢 **Updates**  
+> - 🧭 **[2026-08-21]** Clarified the required PET volume orientation for inference, see [Data Preparation](#data-preparation)
 > - 📈 Evaluation script `evaluation/get_ssim_psnr.py` added to compute **SSIM** and **PSNR**
 > - ✅ Added support for overlapping patch-based inference in `scripts/test.py`  
 > - 💡 Included detailed comments and flexible slicing logic for customizing your own inference pipeline  
@@ -74,11 +75,16 @@ Download the pre-trained model files from this [link](https://www.dropbox.com/sc
 The model was trained using PET images with a voxel size of **1.65 × 1.65 × 1.65 mm³**, so **all testing data should be resampled to this voxel size before inference**.  
 Also, ensure that the low-dose PET input is converted to **SUV units** prior to being passed into the model.
 
+**Required volume orientation:** The model expects input volumes arranged so that, as the array index increases along each dimension, the anatomy moves in the following directions:
+- **Axis 0** (coronal): anterior → posterior
+- **Axis 1** (sagittal): right → left
+- **Axis 2** (axial): inferior → superior
+
 By default, our script assumes the test data volume shape is [192, 288, 520]. The volume is split along the axial axis into 6 overlapping patches of size [192, 288, 96], each overlapping with its neighbor by 10 pixels, which helps to generate smoother transitions at patch boundaries.
 
 
 ### Running the Denoising Script
-Before running the denoising script, modify the `load_data_for_worker` function and `reverse_2_original_dimension` function in `./scripts/test.py` to align with your data format and dimensions. We provide the script `./scripts/test.py` for testing with overlapping patch inference built-in. A shell launcher (`test_DDPM_3d_mpi.sh`) is available to assist multi-GPU inference.
+Before running the denoising script, modify the `load_data_for_worker` function and `reverse_2_original_dimension` function in `./scripts/test.py` to align with your data format, dimensions, and the required volume orientation. We provide the script `./scripts/test.py` for testing with overlapping patch inference built-in. A shell launcher (`test_DDPM_3d_mpi.sh`) is available to assist multi-GPU inference.
 
 #### Script Usage
 
